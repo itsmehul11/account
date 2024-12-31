@@ -1,4 +1,4 @@
-package com.example.account.models;
+package com.common;
 
 public class Person {
 
