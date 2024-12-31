@@ -3,6 +3,7 @@ package com.example.account.rest;
 import com.example.account.models.Person;
 import org.platformlambda.core.exception.AppException;
 import org.platformlambda.core.models.EventEnvelope;
+import org.platformlambda.core.system.EventEmitter;
 import org.platformlambda.core.system.PostOffice;
 import org.platformlambda.core.util.AppConfigReader;
 import org.platformlambda.core.util.Utility;
@@ -51,24 +52,36 @@ public class FetchPerson {
 //            return  response.getBody();
 //}
 @GetMapping("/api/fetchprofile")
-public Mono<Person> getPoJo() {
+public Person getPoJo() {
     AppConfigReader config = AppConfigReader.getInstance();
+    Person person = new Person();
+    person.setId(123);
+    person.setName("user");
+    person.setAddress("address");
     //String remotePort = config.getProperty("lambda.example.port", "8100");
-    String remoteEndpoint = "http://localhost:8100/api/profile";
-    String traceId = Utility.getInstance().getUuid();
-    PostOffice po = new PostOffice("person.test.endpoint", traceId, "GET /api/profile");
-    EventEnvelope req = new EventEnvelope().setTo("person.pojo");
-    return Mono.create(callback -> {
-        try {
-            EventEnvelope response = po.request(req, 3000,Collections.emptyMap(),remoteEndpoint, false).get();
-            if (response.getBody() instanceof Person result) {
-                callback.success(result);
-            } else {
-                callback.error(new AppException(response.getStatus(), response.getError()));
-            }
-        } catch (IOException | ExecutionException | InterruptedException e) {
-            callback.error(e);
-        }
-    });
+    // String remoteEndpoint = "http://localhost:8100/api/profile";
+    // String traceId = Utility.getInstance().getUuid();
+    //  PostOffice po = new PostOffice("person.test.endpoint", traceId, "GET /api/profile");
+    EventEmitter eventemitter = EventEmitter.getInstance();
+    EventEnvelope req = new EventEnvelope().setTo("person.pojo").setBody(person);
+//    return Mono.create(callback -> {
+//        try {
+//            EventEnvelope response = po.request(req, 3000,Collections.emptyMap(),remoteEndpoint, false).get();
+//            if (response.getBody() instanceof Person result) {
+//                callback.success(result);
+//            } else {
+//                callback.error(new AppException(response.getStatus(), response.getError()));
+//            }
+//        } catch (IOException | ExecutionException | InterruptedException e) {
+//            callback.error(e);
+//        }
+//    });
+    try {
+        eventemitter.send(req);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+    return person;
+
 }
 }
