@@ -64,6 +64,7 @@ public Person getPoJo() {
     //  PostOffice po = new PostOffice("person.test.endpoint", traceId, "GET /api/profile");
     EventEmitter eventemitter = EventEmitter.getInstance();
     EventEnvelope req = new EventEnvelope().setTo("person.identify").setBody(person);
+
 //    return Mono.create(callback -> {
 //        try {
 //            EventEnvelope response = po.request(req, 3000,Collections.emptyMap(),remoteEndpoint, false).get();
