@@ -1,4 +1,4 @@
 event:
   http:
     - route: 'person.pojo'
-      target: 'http://127.0.0.1:8100/api/event'
+      target: 'http://127.0.0.1:8100/api/eventkk'

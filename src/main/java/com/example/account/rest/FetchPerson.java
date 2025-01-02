@@ -9,10 +9,12 @@ import org.platformlambda.core.util.AppConfigReader;
 import org.platformlambda.core.util.Utility;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 //@PreLoad(route = "v1.fetch.person", instances = 100)
@@ -52,29 +54,31 @@ public class FetchPerson {
 //            return  response.getBody();
 //}
 @GetMapping("/api/fetchprofile")
-    public Mono<Person> getPoJo() throws IOException, ExecutionException, InterruptedException {
+    public Flux<List<Person>> getPoJo() throws IOException, ExecutionException, InterruptedException {
     AppConfigReader config = AppConfigReader.getInstance();
 
     String traceId = Utility.getInstance().getUuid();
     PostOffice po = new PostOffice("person.test.endpoint", traceId, "GET /api/profile");
     EventEmitter eventemitter = EventEmitter.getInstance();
     EventEnvelope req1= new EventEnvelope().setTo("person.pojo");
-    String remoteEndpoint = "http://127.0.0.1:8100/api/event";
+    String remoteEndpoint = "http://127.0.0.1:8100/api/eventkk";
 //    eventemitter.send(req1);
 
-        return Mono.create(callback -> {
+        return Flux.create(callback -> {
             try {
                 EventEnvelope response = po.request(req1, 3000, Collections.emptyMap(), remoteEndpoint, true).get();
 //                if (response.getBody() instanceof Person result) {
-                if (Person.class.getName().equals(response.getType())) {
-                    Person per = response.getBody(Person.class);
-                    callback.success(per);
+            //    if (Person.class.getName().equals(response.getType())) {
+                    List<Person> per = response.getBody(List.class);
+
                     EventEnvelope req2 = new EventEnvelope().setTo("person.identify").setBody(per);
                     eventemitter.send(req2);
-                } else {
+             //   callback.complete();
+         //       }
+            // else {
                     callback.error(new AppException(response.getStatus(), response.getError()));
-                }
-            } catch (IOException | ExecutionException | InterruptedException e) {
+            //    }
+            } catch (Exception  e) {
                 callback.error(e);
             }
         });
